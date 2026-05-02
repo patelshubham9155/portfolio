@@ -2147,22 +2147,25 @@
             animateVisibleProjects();
         }
 
-                function showProjects() {
+        function showProjects() {
             allProjectCards.forEach((card, index) => {
                 const categories = card.getAttribute('data-category').split(' ');
                 const shouldShow = currentFilter === 'all' || categories.includes(currentFilter);
                 const isVisible = index < visibleProjects;
-                
+
                 if (shouldShow && isVisible) {
                     card.style.display = 'block';
-                    setTimeout(() => card.classList.add('show'), index * 100);
+                    setTimeout(() => {
+                        card.classList.add('show');
+                        card.classList.add('animate');
+                    }, index * 80);
                 } else {
                     card.style.display = 'none';
                     card.classList.remove('show');
+                    card.classList.remove('animate');
                 }
             });
 
-            // Update load more button
             const totalFilteredProjects = allProjectCards.filter(card => {
                 const categories = card.getAttribute('data-category').split(' ');
                 return currentFilter === 'all' || categories.includes(currentFilter);
@@ -2170,7 +2173,7 @@
 
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             const totalAvailableProjects = totalFilteredProjects + additionalProjects.length;
-            
+
             if (visibleProjects >= totalAvailableProjects) {
                 loadMoreBtn.style.display = 'none';
             } else {
@@ -2244,19 +2247,28 @@
         }
 
         function animateVisibleProjects() {
+            const fadeEls = document.querySelectorAll('.fade-in');
+
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.classList.add('animate');
+                        observer.unobserve(entry.target);
                     }
                 });
             }, {
-                threshold: 0.1,
-                rootMargin: '0px 0px -100px 0px'
+                threshold: 0.05,
+                rootMargin: '0px 0px -50px 0px'
             });
 
-            document.querySelectorAll('.fade-in').forEach(el => {
-                observer.observe(el);
+            fadeEls.forEach(el => {
+                // If already in viewport (e.g. on mobile where layout is linear), animate immediately
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight) {
+                    el.classList.add('animate');
+                } else {
+                    observer.observe(el);
+                }
             });
         }
 
